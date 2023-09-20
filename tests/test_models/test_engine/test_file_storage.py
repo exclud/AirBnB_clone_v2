@@ -41,6 +41,22 @@ class test_fileStorage(unittest.TestCase):
         new = BaseModel()
         temp = storage.all()
         self.assertIsInstance(temp, dict)
+        self.assertIn(new, temp.values())
+
+    def test_all_with_cls(self):
+        """ __objects is properly returned with class filter"""
+        new = BaseModel()
+        temp = storage.all(cls=BaseModel)
+        self.assertIsInstance(temp, dict)
+        self.assertIn(new, temp.values())
+        self.assertTrue(all(isinstance(v, BaseModel) for v in temp.values()))
+
+    def test_all_with_no_cls(self):
+        """ __objects is properly returned with no class filter"""
+        new = BaseModel()
+        temp = storage.all(cls=None)
+        self.assertIsInstance(temp, dict)
+        self.assertIn(new, temp.values())
 
     def test_base_model_instantiation(self):
         """ File is not created on BaseModel save """
@@ -108,6 +124,27 @@ class test_fileStorage(unittest.TestCase):
         from models.engine.file_storage import FileStorage
         print(type(storage))
         self.assertEqual(type(storage), FileStorage)
+        
+    def test_delete(self):
+        """ FileStorage delete method """
+        new = BaseModel()
+        key = new.__class__.__name__ + '.' + new.id
+        storage.delete(new)
+        self.assertNotIn(key, storage.all())
+
+    def test_delete_non_existent(self):
+        """ FileStorage delete method with non-existent object """
+        new = BaseModel()
+        key = new.__class__.__name__ + '.' + new.id
+        storage.delete(new)
+        new.id = "12345"
+        self.assertNotIn(key, storage.all())
+
+    def test_delete_none(self):
+        """ FileStorage delete method with None """
+        storage.delete(None)
+        self.assertEqual(len(storage.all()), 1)
+    
 
 class TestConsole(unittest.TestCase):
     """ Class to test the console module """
