@@ -113,30 +113,70 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
-    def do_create(self, args):
-        """ Create an object of any class with given parameters"""
-        args = args.split()
-        if len(args) == 0:
-            print("** class name missing **")
-            return
-        elif args[0] not in HBNBCommand.classes:
-            print("** class doesn't exist **")
-            return
-        new_instance = HBNBCommand.classes[args[0]]()
-        for arg in args[1:]:
+    def do_create(self, arg):
+        """Creates a new instance of a Model"""
+        # Check if arguments are provided
+        if arg:
             try:
-                key, value = arg.split('=')
-                if value[0] == '"' and value[-1] == '"':
-                    value = value[1:-1].replace('_', ' ').replace("\\\"", "\"")
-                elif '.' in value:
-                    value = float(value)
-                else:
-                    value = int(value)
-                setattr(new_instance, key, value)
+                # Split the arguments
+                args = arg.split()
+                # Get the class template from the dummy_classes dictionary
+                template = models.dummy_classes[args[0]]
+                # Create a new instance of the class
+                new_instance = template()
+                try:
+                    # Iterate over the attribute-value pairs
+                    for pair in args[1:]:
+                        # Split the pair into attribute and value
+                        pair_split = pair.split("=")
+                        # Check if the attribute exists in the instance
+                        if (hasattr(new_instance, pair_split[0])):
+                            # Get the value
+                            value = pair_split[1]
+                            # Initialize a flag for error checking
+                            flag = 0
+                            # Check if the value is a string
+                            if (value.startswith('"')):
+                                # Strip the quotes and replace escape characters and underscores
+                                value = value.strip('"')
+                                value = value.replace("\\", "")
+                                value = value.replace("_", " ")
+                            # Check if the value is a float
+                            elif ("." in value):
+                                try:
+                                    value = float(value)
+                                except:
+                                    # Set the flag to 1 if conversion to float fails
+                                    flag = 1
+                            else:
+                                # Try to convert the value to int
+                                try:
+                                    value = int(value)
+                                except:
+                                    # Set the flag to 1 if conversion to int fails
+                                    flag = 1
+                            # If no errors occurred during conversion, set the attribute
+                            if (not flag):
+                                setattr(new_instance, pair_split[0], value)
+                        else:
+                            # Continue to the next pair if the attribute does not exist
+                            continue
+                    # Save the instance
+                    new_instance.save()
+                    # Print the id of the instance
+                    print(new_instance.id)
+                except:
+                    # Rollback the transaction if an error occurred
+                    new_instance.rollback()
             except:
-                pass
-        new_instance.save()
-        print(new_instance.id)
+                # Print an error message if the class does not exist
+                print("** class doesn't exist **")
+                # Rollback the transaction
+                models.storage.rollback()
+        else:
+            # Print an error message if no class name is provided
+            print("** class name missing **")
+
 
     def help_create(self):
         """ Help information for the create method """
