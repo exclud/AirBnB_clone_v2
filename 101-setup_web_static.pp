@@ -1,47 +1,58 @@
-# Install Nginx
-package { 'nginx':
-  ensure => installed,
+# Ensure the apt module is present in your Puppet setup
+class { 'apt':
+  update => {
+    frequency => 'daily',
+  },
 }
 
-# Ensure necessary directories are created
-file { ['/data', '/data/web_static', '/data/web_static/releases', '/data/web_static/shared', '/data/web_static/releases/test']:
+# Ensure the nginx package is installed
+package { 'nginx':
+  ensure  => installed,
+  require => Class['apt::update'],
+}
+
+# Create the necessary directories
+file { ['/data', '/data/web_static', '/data/web_static/releases', '/data/web_static/releases/test', '/data/web_static/shared']:
   ensure => 'directory',
   owner  => 'ubuntu',
   group  => 'ubuntu',
+  mode   => '0755',
 }
 
-# Create a fake HTML file
+# Create the test index.html file
 file { '/data/web_static/releases/test/index.html':
   ensure  => present,
-  content => '
-<html>
-  <head></head>
-  <body>
-    This is a test
-  </body>
-</html>',
   owner   => 'ubuntu',
   group   => 'ubuntu',
+  mode    => '0644',
+  content => "<html>
+<head></head>
+<body>
+    This is a test
+</body>
+</html>\n",
 }
 
 # Ensure symbolic link
 file { '/data/web_static/current':
   ensure => link,
   target => '/data/web_static/releases/test',
-  force  => yes,
+  force  => true, # This ensures that if the link exists it gets overwritten
 }
 
-# Update Nginx configuration (This is a simple way, you might need a more complex approach based on your setup)
-file_line { 'nginx_hbnb_static':
-  path  => '/etc/nginx/sites-available/default',
-  line  => '        location /hbnb_static/ { alias /data/web_static/current/; }',
-  match => '^\s*location\s*/hbnb_static/\s*{',
-  after => '^\s*location\s*/\s*{',
+# Update Nginx to serve content from the created directory
+file_line { 'update_nginx_for_hbnb_static':
+  path => '/etc/nginx/sites-available/default',
+  line => "\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}",
+  match => '^\tlocation / {',
+  after => '^\tlocation / {',
+  require => Package['nginx'],
+  notify => Service['nginx'],
 }
 
-# Ensure Nginx is running and enabled to start on boot
+# Ensure the nginx service is running
 service { 'nginx':
-  ensure    => running,
-  enable    => true,
-  subscribe => File['/etc/nginx/sites-available/default'],
+  ensure => running,
+  enable => true,
+  require => Package['nginx'],
 }

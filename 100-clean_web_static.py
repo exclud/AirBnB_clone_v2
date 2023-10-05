@@ -3,7 +3,7 @@ from fabric.api import run, env, local
 import os
 """Deletes out-of-date archives"""
 
-env.hosts = ['xx-web-01', 'xx-web-02']
+env.hosts = ['54.157.176.235', '54.144.223.110']
 # Optional: Define these if not using default SSH keys and usernames.
 # env.user = "your_username"
 # env.key_filename = "/path/to/your/ssh/key"
