@@ -4,10 +4,10 @@ from fabric.api import run, put, env, local
 import os
 
 
-env.hosts = ['277739-web-01', '277739-web-02']
+env.hosts = ['54.157.176.235', '54.144.223.110']
 # Optional: Define these if not using default SSH keys and usernames.
-# env.user = "your_username"
-# env.key_filename = "/path/to/your/ssh/key"
+# env.user = "shammah"
+# env.key_filename = "/ssh/id_rsa/"
 
 
 def do_deploy(archive_path):
