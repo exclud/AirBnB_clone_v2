@@ -1,13 +1,33 @@
 #!/usr/bin/python3
-"""Distributes an archive to web servers."""
-from fabric.api import run, put, env, local
+"""Script to generate a .tgz archive and deploy it to servers"""
+from fabric.api import local, run, put, env
+import datetime
 import os
 
+env.hosts = ['54.157.176.235', '54.144.223.110']  # updated server IPs
 
-env.hosts = ['54.157.176.235', '54.144.223.110']
 # Optional: Define these if not using default SSH keys and usernames.
-# env.user = "shammah"
-# env.key_filename = "/ssh/id_rsa/"
+# env.user = "your_username"
+# env.key_filename = "/path/to/your/ssh/key"
+
+
+def do_pack():
+    """Generates a .tgz archive from the contents of the web_static folder."""
+
+    # Ensure the versions directory exists
+    if not os.path.exists('versions'):
+        local('mkdir -p versions')
+
+    # Create a filename based on current datetime
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    archive_path = 'versions/web_static_{}.tgz'.format(timestamp)
+
+    # Use the tar command to generate the .tgz
+    archive_command = 'tar -czvf {} web_static'.format(archive_path)
+    if local(archive_command).succeeded:
+        return archive_path
+    else:
+        return None
 
 
 def do_deploy(archive_path):
