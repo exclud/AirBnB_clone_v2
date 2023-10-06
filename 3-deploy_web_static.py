@@ -1,13 +1,14 @@
 #!/usr/bin/python3
-from fabric.api import run, put, env, local
+from fabric.api import *
 from datetime import datetime
 import os
 """Generates a .tgz archive from the contents of the web_static folder."""
 
-env.hosts = ['54.157.176.235', '54.144.223.110']
+env.hosts = ["54.157.176.235", "54.144.223.110"]  # updated server IPs
+
 # Optional: Define these if not using default SSH keys and usernames.
-# env.user = "your_username"
-# env.key_filename = "/path/to/your/ssh/key"
+env.user = 'ubuntu'
+env.key_filename = "/home/shammah/.ssh/id_rsa"
 
 
 def do_pack():
