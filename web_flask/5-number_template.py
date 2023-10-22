@@ -56,7 +56,7 @@ def number_template(n):
     """
     Renders an HTML page displaying the number in an H1 tag, if n is an integer.
     """
-    return render_template('number.html', number=n)
+    return render_template('5-number.html', number=n)
 
 
 if __name__ == '__main__':
