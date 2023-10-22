@@ -5,19 +5,20 @@ This module serves as the main entry point for the Flask web application.
 
 from flask import Flask, render_template
 from models import storage
+from models.state import State
 
 app = Flask(__name__)
 
 
-@app.route('/states_list', strict_slashes=False)
-def states_list():
+@app.route('/cities_by_states', strict_slashes=False)
+def cities_by_states():
     """
-    Display an HTML page with a list of all
-    State objects present in the storage.
+    Display an HTML page with a list of
+    all State objects and associated City objects present in storage.
     """
-    states = storage.all('State').values()
+    states = storage.all(State).values()
     sorted_states = sorted(states, key=lambda x: x.name)
-    return render_template('states_list.html', states=sorted_states)
+    return render_template('cities_by_states.html', states=sorted_states)
 
 
 @app.teardown_appcontext
